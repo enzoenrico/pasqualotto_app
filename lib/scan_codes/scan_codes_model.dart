@@ -11,6 +11,8 @@ class ScanCodesModel extends FlutterFlowModel<ScanCodesWidget> {
   // State field(s) for CheckboxGroup widget.
   FormFieldController<List<String>>? checkboxGroupValueController;
   List<String>? get checkboxGroupValues => checkboxGroupValueController?.value;
+  Map<dynamic, bool> checkboxListTileValueMap = {};
+
   set checkboxGroupValues(List<String>? v) =>
       checkboxGroupValueController?.value = v;
 

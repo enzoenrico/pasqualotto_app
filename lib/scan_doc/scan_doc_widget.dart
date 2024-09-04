@@ -121,14 +121,28 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
                       ),
                       child: Builder(
                         builder: (context) {
+
+                          if (FFAppState().allpdfs.isEmpty) {
+                            return const Center(
+                              child: Text('No PDFs uploaded.'),
+                            );
+                          }
+
                           final pdf2jsonResults = getJsonField(
                             FFAppState().allpdfs.last,
                             r'''$.parts''',
-                          ).toList();
+                          )?.toList();
+
+                          if (pdf2jsonResults == null || pdf2jsonResults.isEmpty) {
+                            return const Center(
+                              child: Text('No data to display.'),
+                            );
+                          }
 
                           return SingleChildScrollView(
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.start,
                               children: List.generate(pdf2jsonResults.length,
                                   (pdf2jsonResultsIndex) {
                                 final pdf2jsonResultsItem =
