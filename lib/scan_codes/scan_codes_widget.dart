@@ -1,13 +1,11 @@
+
 import '/flutter_flow/flutter_flow_animations.dart';
-import '/flutter_flow/flutter_flow_checkbox_group.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/form_field_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:provider/provider.dart';
 import 'scan_codes_model.dart';
 export 'scan_codes_model.dart';
 
@@ -30,6 +28,7 @@ class _ScanCodesWidgetState extends State<ScanCodesWidget>
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final animationsMap = <String, AnimationInfo>{};
+  final List<String> _checkboxGroupValues = [];
 
   @override
   void initState() {
@@ -65,19 +64,26 @@ class _ScanCodesWidgetState extends State<ScanCodesWidget>
           !anim.applyInitialState),
       this,
     );
-  }
 
-  @override
-  void dispose() {
-    _model.dispose();
+    @override
+    void dispose() {
+      _model.dispose();
 
-    super.dispose();
+      super.dispose();
+    }
+
+    final jsonField = (getJsonField(
+      FFAppState().currentpdf,
+      r'''$.parts''',
+      true,
+    ) as List)
+        .map<String>((s) => s.toString())
+        .toList()
+        .toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    context.watch<FFAppState>();
-
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -87,15 +93,14 @@ class _ScanCodesWidgetState extends State<ScanCodesWidget>
           top: true,
           child: Column(
             mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Flexible(
-                flex: 1,
+              Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: FFButtonWidget(
                   onPressed: () async {
-                    _model.scannedBarcodeItem =
-                        await FlutterBarcodeScanner.scanBarcode(
+                    var scannedBarcodeItem = await FlutterBarcodeScanner.scanBarcode(
                       '#C62828', // scanning line color
                       'Cancel', // cancel button text
                       true, // whether to show the flash icon
@@ -106,12 +111,11 @@ class _ScanCodesWidgetState extends State<ScanCodesWidget>
                       context: context,
                       builder: (alertDialogContext) {
                         return AlertDialog(
-                          title: Text(_model.scannedBarcodeItem),
-                          content: Text(_model.scannedBarcodeItem),
+                          title: Text(scannedBarcodeItem),
+                          content: Text(scannedBarcodeItem),
                           actions: [
                             TextButton(
-                              onPressed: () =>
-                                  Navigator.pop(alertDialogContext),
+                              onPressed: () => Navigator.pop(alertDialogContext),
                               child: const Text('Ok'),
                             ),
                           ],
@@ -121,19 +125,17 @@ class _ScanCodesWidgetState extends State<ScanCodesWidget>
 
                     setState(() {});
                   },
-                  text: 'Button',
+                  text: 'Scan code',
                   options: FFButtonOptions(
                     height: 40.0,
-                    padding:
-                        const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
-                    iconPadding:
-                        const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+                    iconPadding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                     color: FlutterFlowTheme.of(context).primary,
                     textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                          fontFamily: 'Readex Pro',
-                          color: Colors.white,
-                          letterSpacing: 0.0,
-                        ),
+                      fontFamily: 'Readex Pro',
+                      color: Colors.white,
+                      letterSpacing: 0.0,
+                    ),
                     elevation: 3.0,
                     borderSide: const BorderSide(
                       color: Colors.transparent,
@@ -144,7 +146,6 @@ class _ScanCodesWidgetState extends State<ScanCodesWidget>
                 ),
               ),
               Expanded(
-                flex: 3,
                 child: Padding(
                   padding: const EdgeInsets.all(6.0),
                   child: ClipRRect(
@@ -164,44 +165,89 @@ class _ScanCodesWidgetState extends State<ScanCodesWidget>
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           children: [
-                            FlutterFlowCheckboxGroup(
-                              options: (getJsonField(
-                                FFAppState().currentpdf,
-                                r'''$.parts''',
-                                true,
-                              ) as List)
-                                  .map<String>((s) => s.toString())
-                                  .toList()
-                                  .toList(),
-                              onChanged: (val) => setState(
-                                  () => _model.checkboxGroupValues = val),
-                              controller:
-                                  _model.checkboxGroupValueController ??=
-                                      FormFieldController<List<String>>(
-                                [],
+                            Theme(
+                              data: ThemeData(
+                                checkboxTheme: const CheckboxThemeData(
+                                  visualDensity: VisualDensity.compact,
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                unselectedWidgetColor:
+                                FlutterFlowTheme.of(context).secondaryText,
                               ),
-                              activeColor: FlutterFlowTheme.of(context).primary,
-                              checkColor: FlutterFlowTheme.of(context).info,
-                              checkboxBorderColor:
-                                  FlutterFlowTheme.of(context).secondaryText,
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
+                              child: CheckboxListTile(
+                                value: true,
+                                onChanged: (newValue) {
+                                  setState(() {
+                                    // Lógica para atualizar o valor do checkbox
+                                  });
+                                },
+                                title: Text(
+                                  'Code 1',
+                                  style: FlutterFlowTheme.of(context).titleLarge.override(
+                                    fontFamily: 'Outfit',
+                                    letterSpacing: 0.0,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  'Ref 1',
+                                  style: FlutterFlowTheme.of(context).labelMedium.override(
                                     fontFamily: 'Readex Pro',
                                     letterSpacing: 0.0,
                                   ),
-                              checkboxBorderRadius: BorderRadius.circular(4.0),
-                              initialized: _model.checkboxGroupValues != null,
+                                ),
+                                tileColor: FlutterFlowTheme.of(context).secondaryBackground,
+                                activeColor: FlutterFlowTheme.of(context).primary,
+                                checkColor: FlutterFlowTheme.of(context).info,
+                                dense: false,
+                                controlAffinity: ListTileControlAffinity.trailing,
+                              ),
                             ),
+                            Theme(
+                              data: ThemeData(
+                                checkboxTheme: const CheckboxThemeData(
+                                  visualDensity: VisualDensity.compact,
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                unselectedWidgetColor:
+                                FlutterFlowTheme.of(context).secondaryText,
+                              ),
+                              child: CheckboxListTile(
+                                value: false,
+                                onChanged: (newValue) {
+                                  setState(() {
+                                    // Lógica para atualizar o valor do checkbox
+                                  });
+                                },
+                                title: Text(
+                                  'Code 2',
+                                  style: FlutterFlowTheme.of(context).titleLarge.override(
+                                    fontFamily: 'Outfit',
+                                    letterSpacing: 0.0,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  'Ref 2',
+                                  style: FlutterFlowTheme.of(context).labelMedium.override(
+                                    fontFamily: 'Readex Pro',
+                                    letterSpacing: 0.0,
+                                  ),
+                                ),
+                                tileColor: FlutterFlowTheme.of(context).secondaryBackground,
+                                activeColor: FlutterFlowTheme.of(context).primary,
+                                checkColor: FlutterFlowTheme.of(context).info,
+                                dense: false,
+                                controlAffinity: ListTileControlAffinity.trailing,
+                              ),
+                            ),
+                            // Adicione mais CheckboxListTile conforme necessário
                           ],
                         ),
-                      ).animateOnActionTrigger(
-                        animationsMap['columnOnActionTriggerAnimation']!,
                       ),
                     ),
                   ),
                 ),
               ),
+
             ],
           ),
         ),
