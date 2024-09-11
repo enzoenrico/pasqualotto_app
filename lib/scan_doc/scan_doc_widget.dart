@@ -31,6 +31,7 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
   void initState() {
     super.initState();
     _model = createModel(context, () => ScanDocModel());
+    _fetchPdfToJsonData();
 
     animationsMap.addAll({
       'columnOnActionTriggerAnimation': AnimationInfo(
@@ -62,6 +63,13 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
       this,
     );
   }
+  void _fetchPdfToJsonData() async{
+    var response = await PdfToJsonCall.call();
+    if(response != null && response.jsonBody != null){
+      _model.updateApiResponseData(response.jsonBody as String);
+      setState((){})
+    }
+  }
 
   @override
   void dispose() {
@@ -72,6 +80,7 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
+    List<dynamic> apiResponseData = [];
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -120,28 +129,29 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
                       ),
                       child: Builder(
                         builder: (context) {
-                          final pdf2jsonResults = [
+                          // final pdf2jsonResults = [
 
-                              {
-                                'code': 'BAS0098A',
-                                'ref': 'GAV0191A',
-                              }
-                              ,
-                              {
-                                'code': 'BAS0098B',
-                                'ref': 'GAV0191B',
-                              }
-                              ,
-                              {
-                                'code': 'BAS0098C',
-                                'ref': 'GAV0191C',
-                              }
-                              ,
-                              {
-                                'code': 'BAS0098D',
-                                'ref': 'GAV0191D',
-                              }
-                          ];
+                          //     {
+                          //       'code': 'BAS0098A',
+                          //       'ref': 'GAV0191A',
+                          //     }
+                          //     ,
+                          //     {
+                          //       'code': 'BAS0098B',
+                          //       'ref': 'GAV0191B',
+                          //     }
+                          //     ,
+                          //     {
+                          //       'code': 'BAS0098C',
+                          //       'ref': 'GAV0191C',
+                          //     }
+                          //     ,
+                          //     {
+                          //       'code': 'BAS0098D',
+                          //       'ref': 'GAV0191D',
+                          //     }
+                          // ];
+                          final pdf2jsonResults = _model.apiResponseData;
                           return SingleChildScrollView(
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
