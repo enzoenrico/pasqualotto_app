@@ -45,20 +45,29 @@ class _ScanCodesWidgetState extends State<ScanCodesWidget> {
   }
 
   Widget _buildInfoList() {
-    final jsonField = (getJsonField(
-      FFAppState().currentpdf,
-      r'''$.parts''',
-      true,
-    ) as List?)?.map<Map<String, dynamic>>((s) => s as Map<String, dynamic>).toList();
+    final jsonField = [
 
-    if (jsonField == null || jsonField.isEmpty) {
-      return Center(
-        child: Text(
-          'No data available',
-          style: FlutterFlowTheme.of(context).titleLarge,
-        ),
-      );
-    }
+      {
+        'code': 'BAS0098A',
+        'ref': 'GAV0191A',
+      }
+      ,
+      {
+        'code': 'BAS0098B',
+        'ref': 'GAV0191B',
+      }
+      ,
+      {
+        'code': 'BAS0098C',
+        'ref': 'GAV0191C',
+      }
+      ,
+      {
+        'code': 'BAS0098D',
+        'ref': 'GAV0191D',
+      }
+    ];
+
 
     return ListView.builder(
       itemCount: jsonField.length,
