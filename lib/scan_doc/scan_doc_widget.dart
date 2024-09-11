@@ -12,6 +12,8 @@ import 'package:provider/provider.dart';
 import 'scan_doc_model.dart';
 export 'scan_doc_model.dart';
 
+
+
 class ScanDocWidget extends StatefulWidget {
   const ScanDocWidget({super.key});
 
@@ -118,76 +120,68 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
                           width: 3.0,
                         ),
                       ),
-                      child: Builder(
-                        builder: (context) {
-                          final pdf2jsonResults = [
+                      child: FutureBuilder<List<dynamic>>(
+                        future: _model.fetchData("https://render-pasq-api.onrender.com/process"), // Chamada assíncrona
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            // Mostra um indicador de progresso enquanto os dados estão sendo carregados
+                            return const CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            // Caso ocorra um erro, exibe a mensagem de erro
+                            return Text('Erro ao carregar os dados: ${snapshot.error}');
+                          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            // Se não houver dados, exibe uma mensagem apropriada
+                            return Text('Nenhum dado disponível');
+                          } else {
+                            // Quando os dados são carregados com sucesso
+                            final pdf2jsonResults = snapshot.data?[0]; // Garante que os dados estão disponíveis
 
-                              {
-                                'code': 'BAS0098A',
-                                'ref': 'GAV0191A',
-                              }
-                              ,
-                              {
-                                'code': 'BAS0098B',
-                                'ref': 'GAV0191B',
-                              }
-                              ,
-                              {
-                                'code': 'BAS0098C',
-                                'ref': 'GAV0191C',
-                              }
-                              ,
-                              {
-                                'code': 'BAS0098D',
-                                'ref': 'GAV0191D',
-                              }
-                          ];
-                          return SingleChildScrollView(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: List.generate(pdf2jsonResults.length, (pdf2jsonResultsIndex) {
-                                final pdf2jsonResultsItem = pdf2jsonResults[pdf2jsonResultsIndex];
-
-                                return Theme(
-                                  data: ThemeData(
-                                    checkboxTheme: const CheckboxThemeData(
-                                      visualDensity: VisualDensity.compact,
-                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    unselectedWidgetColor: FlutterFlowTheme.of(context).secondaryText,
-                                  ),
-                                  child: CheckboxListTile(
-                                    value: _model.checkboxListTileValueMap[pdf2jsonResultsItem] ??= true,
-                                    onChanged: (newValue) async {
-                                      setState(() => _model.checkboxListTileValueMap[pdf2jsonResultsItem] = newValue!);
-                                    },
-                                    title: Text(
-                                      pdf2jsonResultsItem['code'].toString(),
-                                      style: FlutterFlowTheme.of(context).titleLarge.override(
-                                        fontFamily: 'Outfit',
-                                        letterSpacing: 0.0,
+                            return SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: List.generate(pdf2jsonResults.length, (pdf2jsonResultsIndex) {
+                                  final pdf2jsonResultsItem = pdf2jsonResults[pdf2jsonResultsIndex];
+                                  return Theme(
+                                    data: ThemeData(
+                                      checkboxTheme: const CheckboxThemeData(
+                                        visualDensity: VisualDensity.compact,
+                                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                       ),
+                                      unselectedWidgetColor: FlutterFlowTheme.of(context).secondaryText,
                                     ),
-                                    subtitle: Text(
-                                        pdf2jsonResultsItem['ref'].toString(),
-                                      style: FlutterFlowTheme.of(context).labelMedium.override(
-                                        fontFamily: 'Readex Pro',
-                                        letterSpacing: 0.0,
+                                    child: CheckboxListTile(
+                                      value: _model.checkboxListTileValueMap[pdf2jsonResultsItem] ??= true,
+                                      onChanged: (newValue) async {
+                                        setState(() => _model.checkboxListTileValueMap[pdf2jsonResultsItem] = newValue!);
+                                      },
+                                      title: Text(
+                                        pdf2jsonResultsItem['0'].toString(),
+                                        style: FlutterFlowTheme.of(context).titleLarge.override(
+                                          fontFamily: 'Outfit',
+                                          letterSpacing: 0.0,
+                                        ),
                                       ),
+                                      subtitle: Text(
+                                        pdf2jsonResultsItem['1'].toString(),
+                                        style: FlutterFlowTheme.of(context).labelMedium.override(
+                                          fontFamily: 'Readex Pro',
+                                          letterSpacing: 0.0,
+                                        ),
+                                      ),
+                                      tileColor: FlutterFlowTheme.of(context).secondaryBackground,
+                                      activeColor: FlutterFlowTheme.of(context).primary,
+                                      checkColor: FlutterFlowTheme.of(context).info,
+                                      dense: false,
+                                      controlAffinity: ListTileControlAffinity.trailing,
                                     ),
-                                    tileColor: FlutterFlowTheme.of(context).secondaryBackground,
-                                    activeColor: FlutterFlowTheme.of(context).primary,
-                                    checkColor: FlutterFlowTheme.of(context).info,
-                                    dense: false,
-                                    controlAffinity: ListTileControlAffinity.trailing,
-                                  ),
-                                );
-                              }),
-                            ),
-                          ).animateOnActionTrigger(
-                            animationsMap['columnOnActionTriggerAnimation']!,
-                          );
+                                  );
+                                }),
+                              ),
+                            ).animateOnActionTrigger(
+                              animationsMap['columnOnActionTriggerAnimation']!,
+                            );
+                          }
                         },
                       ),
 
