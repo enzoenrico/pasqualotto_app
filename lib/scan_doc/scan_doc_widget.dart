@@ -12,6 +12,8 @@ import 'package:provider/provider.dart';
 import 'scan_doc_model.dart';
 export 'scan_doc_model.dart';
 
+
+
 class ScanDocWidget extends StatefulWidget {
   const ScanDocWidget({super.key});
 
@@ -57,7 +59,7 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
     });
     setupAnimations(
       animationsMap.values.where((anim) =>
-          anim.trigger == AnimationTrigger.onActionTrigger ||
+      anim.trigger == AnimationTrigger.onActionTrigger ||
           !anim.applyInitialState),
       this,
     );
@@ -66,7 +68,6 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
@@ -96,11 +97,11 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
                   'Upload the pdf document',
                   textAlign: TextAlign.center,
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
-                        fontFamily: 'Readex Pro',
-                        fontSize: 24.0,
-                        letterSpacing: 0.0,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    fontFamily: 'Readex Pro',
+                    fontSize: 24.0,
+                    letterSpacing: 0.0,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               Expanded(
@@ -119,81 +120,71 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
                           width: 3.0,
                         ),
                       ),
-                      child: Builder(
-                        builder: (context) {
-                          final pdf2jsonResults = getJsonField(
-                            FFAppState().allpdfs.last,
-                            r'''$.parts''',
-                          ).toList();
+                      child: FutureBuilder<List<dynamic>>(
+                        future: _model.fetchData("https://render-pasq-api.onrender.com/process"), // Chamada assíncrona
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            // Mostra um indicador de progresso enquanto os dados estão sendo carregados
+                            return const CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            // Caso ocorra um erro, exibe a mensagem de erro
+                            return Text('Erro ao carregar os dados: ${snapshot.error}');
+                          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            // Se não houver dados, exibe uma mensagem apropriada
+                            return Text('Nenhum dado disponível');
+                          } else {
+                            // Quando os dados são carregados com sucesso
+                            final pdf2jsonResults = snapshot.data?[0]; // Garante que os dados estão disponíveis
 
-                          return SingleChildScrollView(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              children: List.generate(pdf2jsonResults.length,
-                                  (pdf2jsonResultsIndex) {
-                                final pdf2jsonResultsItem =
-                                    pdf2jsonResults[pdf2jsonResultsIndex];
-                                return Theme(
-                                  data: ThemeData(
-                                    checkboxTheme: const CheckboxThemeData(
-                                      visualDensity: VisualDensity.compact,
-                                      materialTapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
+                            return SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: List.generate(pdf2jsonResults.length, (pdf2jsonResultsIndex) {
+                                  final pdf2jsonResultsItem = pdf2jsonResults[pdf2jsonResultsIndex];
+                                  return Theme(
+                                    data: ThemeData(
+                                      checkboxTheme: const CheckboxThemeData(
+                                        visualDensity: VisualDensity.compact,
+                                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      unselectedWidgetColor: FlutterFlowTheme.of(context).secondaryText,
                                     ),
-                                    unselectedWidgetColor:
-                                        FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                  ),
-                                  child: CheckboxListTile(
-                                    value: _model.checkboxListTileValueMap[
-                                        pdf2jsonResultsItem] ??= true,
-                                    onChanged: (newValue) async {
-                                      setState(() =>
-                                          _model.checkboxListTileValueMap[
-                                              pdf2jsonResultsItem] = newValue!);
-                                    },
-                                    title: Text(
-                                      getJsonField(
-                                        pdf2jsonResultsItem,
-                                        r'''$["code"]''',
-                                      ).toString(),
-                                      style: FlutterFlowTheme.of(context)
-                                          .titleLarge
-                                          .override(
-                                            fontFamily: 'Outfit',
-                                            letterSpacing: 0.0,
-                                          ),
+                                    child: CheckboxListTile(
+                                      value: _model.checkboxListTileValueMap[pdf2jsonResultsItem] ??= true,
+                                      onChanged: (newValue) async {
+                                        setState(() => _model.checkboxListTileValueMap[pdf2jsonResultsItem] = newValue!);
+                                      },
+                                      title: Text(
+                                        pdf2jsonResultsItem['0'].toString(),
+                                        style: FlutterFlowTheme.of(context).titleLarge.override(
+                                          fontFamily: 'Outfit',
+                                          letterSpacing: 0.0,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        pdf2jsonResultsItem['1'].toString(),
+                                        style: FlutterFlowTheme.of(context).labelMedium.override(
+                                          fontFamily: 'Readex Pro',
+                                          letterSpacing: 0.0,
+                                        ),
+                                      ),
+                                      tileColor: FlutterFlowTheme.of(context).secondaryBackground,
+                                      activeColor: FlutterFlowTheme.of(context).primary,
+                                      checkColor: FlutterFlowTheme.of(context).info,
+                                      dense: false,
+                                      controlAffinity: ListTileControlAffinity.trailing,
                                     ),
-                                    subtitle: Text(
-                                      getJsonField(
-                                        pdf2jsonResultsItem,
-                                        r'''$.ref''',
-                                      ).toString(),
-                                      style: FlutterFlowTheme.of(context)
-                                          .labelMedium
-                                          .override(
-                                            fontFamily: 'Readex Pro',
-                                            letterSpacing: 0.0,
-                                          ),
-                                    ),
-                                    tileColor: FlutterFlowTheme.of(context)
-                                        .secondaryBackground,
-                                    activeColor:
-                                        FlutterFlowTheme.of(context).primary,
-                                    checkColor:
-                                        FlutterFlowTheme.of(context).info,
-                                    dense: false,
-                                    controlAffinity:
-                                        ListTileControlAffinity.trailing,
-                                  ),
-                                );
-                              }),
-                            ),
-                          ).animateOnActionTrigger(
-                            animationsMap['columnOnActionTriggerAnimation']!,
-                          );
+                                  );
+                                }),
+                              ),
+                            ).animateOnActionTrigger(
+                              animationsMap['columnOnActionTriggerAnimation']!,
+                            );
+                          }
                         },
                       ),
+
                     ),
                   ),
                 ),
@@ -219,7 +210,7 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
                         children: [
                           Expanded(
                             child: FlutterFlowPdfViewer(
-                              fileBytes: _model.uploadedLocalFile.bytes,
+                              fileBytes: _model.uploadedLocalFile?.bytes,
                               width: double.infinity,
                               height: 290.0,
                               horizontalScroll: true,
@@ -261,9 +252,9 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
                               try {
                                 selectedUploadedFiles = selectedFiles
                                     .map((m) => FFUploadedFile(
-                                          name: m.storagePath.split('/').last,
-                                          bytes: m.bytes,
-                                        ))
+                                  name: m.storagePath.split('/').last,
+                                  bytes: m.bytes,
+                                ))
                                     .toList();
                               } finally {
                                 _model.isDataUploading = false;
@@ -281,18 +272,18 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
                             }
 
                             _model.apiPdf2jsonResult =
-                                await PdfToJsonCall.call();
+                            await PdfToJsonCall.call();
 
                             FFAppState().currentpdf =
-                                (_model.apiPdf2jsonResult?.jsonBody ?? '');
+                            (_model.apiPdf2jsonResult?.jsonBody ?? '');
                             FFAppState().addToAllpdfs(
                                 (_model.apiPdf2jsonResult?.jsonBody ?? ''));
                             FFAppState().update(() {});
                             if (animationsMap[
-                                    'columnOnActionTriggerAnimation'] !=
+                            'columnOnActionTriggerAnimation'] !=
                                 null) {
                               await animationsMap[
-                                      'columnOnActionTriggerAnimation']!
+                              'columnOnActionTriggerAnimation']!
                                   .controller
                                   .forward(from: 0.0);
                             }
@@ -317,10 +308,10 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
                             textStyle: FlutterFlowTheme.of(context)
                                 .titleSmall
                                 .override(
-                                  fontFamily: 'Readex Pro',
-                                  color: Colors.white,
-                                  letterSpacing: 0.0,
-                                ),
+                              fontFamily: 'Readex Pro',
+                              color: Colors.white,
+                              letterSpacing: 0.0,
+                            ),
                             elevation: 3.0,
                             borderSide: const BorderSide(
                               color: Colors.transparent,
@@ -338,24 +329,24 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
                           onPressed: (FFAppState().currentpdf == null)
                               ? null
                               : () async {
-                                  context.pushNamed(
-                                    'scan_codes',
-                                    queryParameters: {
-                                      'checkThose': serializeParam(
-                                        FFAppState().currentpdf,
-                                        ParamType.JSON,
-                                      ),
-                                    }.withoutNulls,
-                                    extra: <String, dynamic>{
-                                      kTransitionInfoKey: const TransitionInfo(
-                                        hasTransition: true,
-                                        transitionType:
-                                            PageTransitionType.bottomToTop,
-                                        duration: Duration(milliseconds: 150),
-                                      ),
-                                    },
-                                  );
-                                },
+                            context.pushNamed(
+                              'scan_codes',
+                              queryParameters: {
+                                'checkThose': serializeParam(
+                                  FFAppState().currentpdf,
+                                  ParamType.JSON,
+                                ),
+                              }.withoutNulls,
+                              extra: <String, dynamic>{
+                                kTransitionInfoKey: const TransitionInfo(
+                                  hasTransition: true,
+                                  transitionType:
+                                  PageTransitionType.bottomToTop,
+                                  duration: Duration(milliseconds: 150),
+                                ),
+                              },
+                            );
+                          },
                           text: 'Save',
                           icon: const FaIcon(
                             FontAwesomeIcons.checkCircle,
@@ -372,10 +363,10 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
                             textStyle: FlutterFlowTheme.of(context)
                                 .titleSmall
                                 .override(
-                                  fontFamily: 'Readex Pro',
-                                  color: FlutterFlowTheme.of(context).primary,
-                                  letterSpacing: 0.0,
-                                ),
+                              fontFamily: 'Readex Pro',
+                              color: FlutterFlowTheme.of(context).primary,
+                              letterSpacing: 0.0,
+                            ),
                             elevation: 3.0,
                             borderSide: BorderSide(
                               color: FlutterFlowTheme.of(context).primary,
@@ -383,9 +374,9 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
                             ),
                             borderRadius: BorderRadius.circular(8.0),
                             disabledColor:
-                                FlutterFlowTheme.of(context).secondary,
+                            FlutterFlowTheme.of(context).secondary,
                             disabledTextColor:
-                                FlutterFlowTheme.of(context).secondaryText,
+                            FlutterFlowTheme.of(context).secondaryText,
                           ),
                         ),
                       ),

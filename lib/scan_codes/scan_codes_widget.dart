@@ -1,15 +1,8 @@
-import '/flutter_flow/flutter_flow_animations.dart';
-import '/flutter_flow/flutter_flow_checkbox_group.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Importa o shared_preferences
+import '../flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/form_field_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:provider/provider.dart';
-import 'scan_codes_model.dart';
-export 'scan_codes_model.dart';
 
 class ScanCodesWidget extends StatefulWidget {
   const ScanCodesWidget({
@@ -23,61 +16,56 @@ class ScanCodesWidget extends StatefulWidget {
   State<ScanCodesWidget> createState() => _ScanCodesWidgetState();
 }
 
-class _ScanCodesWidgetState extends State<ScanCodesWidget>
-    with TickerProviderStateMixin {
-  late ScanCodesModel _model;
-
+class _ScanCodesWidgetState extends State<ScanCodesWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
-
-  final animationsMap = <String, AnimationInfo>{};
+  List<bool> _selectedItems = [];
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => ScanCodesModel());
-
-    animationsMap.addAll({
-      'columnOnActionTriggerAnimation': AnimationInfo(
-        trigger: AnimationTrigger.onActionTrigger,
-        applyInitialState: true,
-        effectsBuilder: () => [
-          VisibilityEffect(duration: 150.ms),
-          FadeEffect(
-            curve: Curves.easeInOut,
-            delay: 150.0.ms,
-            duration: 600.0.ms,
-            begin: 0.0,
-            end: 1.0,
-          ),
-          MoveEffect(
-            curve: Curves.easeInOut,
-            delay: 150.0.ms,
-            duration: 600.0.ms,
-            begin: const Offset(0.0, 100.0),
-            end: const Offset(0.0, 0.0),
-          ),
-        ],
-      ),
-    });
-    setupAnimations(
-      animationsMap.values.where((anim) =>
-          anim.trigger == AnimationTrigger.onActionTrigger ||
-          !anim.applyInitialState),
-      this,
-    );
+    _loadSelectedItems(); // Carrega os estados salvos das checkboxes
   }
 
-  @override
-  void dispose() {
-    _model.dispose();
+  // Lista de códigos e referências
+  final List<dynamic> jsonField = [
+    {
+      'code': '0074838270542230000000551231280824',
+      'ref': 'GAV0191A',
+    },
+    {
+      'code': 'BAS0098B',
+      'ref': 'GAV0191B',
+    },
+    {
+      'code': 'BAS0098C',
+      'ref': 'GAV0191C',
+    },
+    {
+      'code': 'BAS0098D',
+      'ref': 'GAV0191D',
+    },
+    // Adicione mais itens conforme necessário
+  ];
 
-    super.dispose();
+  // Carrega o estado salvo das checkboxes
+  Future<void> _loadSelectedItems() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _selectedItems = List<bool>.filled(jsonField.length, false);
+      for (int i = 0; i < jsonField.length; i++) {
+        _selectedItems[i] = prefs.getBool('selected_$i') ?? false;
+      }
+    });
+  }
+
+  // Salva o estado das checkboxes
+  Future<void> _saveSelectedItem(int index, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('selected_$index', value);
   }
 
   @override
   Widget build(BuildContext context) {
-    context.watch<FFAppState>();
-
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -86,123 +74,98 @@ class _ScanCodesWidgetState extends State<ScanCodesWidget>
         body: SafeArea(
           top: true,
           child: Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Flexible(
-                flex: 1,
-                child: FFButtonWidget(
-                  onPressed: () async {
-                    _model.scannedBarcodeItem =
-                        await FlutterBarcodeScanner.scanBarcode(
-                      '#C62828', // scanning line color
-                      'Cancel', // cancel button text
-                      true, // whether to show the flash icon
-                      ScanMode.BARCODE,
-                    );
+              Expanded(
+                child: MobileScanner(
+                  onDetect: (codeCapture) {
+                    final List<Barcode> barcodes = codeCapture.barcodes;
+                    final Uint8List? image = codeCapture.image;
 
-                    await showDialog(
-                      context: context,
-                      builder: (alertDialogContext) {
-                        return AlertDialog(
-                          title: Text(_model.scannedBarcodeItem),
-                          content: Text(_model.scannedBarcodeItem),
-                          actions: [
-                            TextButton(
-                              onPressed: () =>
-                                  Navigator.pop(alertDialogContext),
-                              child: const Text('Ok'),
-                            ),
-                          ],
+                    for (final barcode in barcodes) {
+                      String? scannedCode = barcode.rawValue;
+                      bool found = false;
+
+                      if (scannedCode != null) {
+                        // Verifica se o código escaneado está presente na lista de jsonField
+                        for (int i = 0; i < jsonField.length; i++) {
+                          if (jsonField[i]['code'] == scannedCode) {
+                            setState(() {
+                              _selectedItems[i] = true; // Marca a checkbox como true
+                              _saveSelectedItem(i, true); // Salva o estado
+                            });
+                            found = true;
+                            break;
+                          }
+                        }
+                      }
+
+                      if (!found) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Código escaneado não encontrado!'),
+                            backgroundColor: Colors.red,
+                          ),
                         );
-                      },
-                    );
+                      }
 
-                    setState(() {});
+                      print('${DateTime.now()} - Barcode Data: $scannedCode');
+                    }
                   },
-                  text: 'Button',
-                  options: FFButtonOptions(
-                    height: 40.0,
-                    padding:
-                        const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
-                    iconPadding:
-                        const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                    color: FlutterFlowTheme.of(context).primary,
-                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                          fontFamily: 'Readex Pro',
-                          color: Colors.white,
-                          letterSpacing: 0.0,
-                        ),
-                    elevation: 3.0,
-                    borderSide: const BorderSide(
-                      color: Colors.transparent,
-                      width: 1.0,
-                    ),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
                 ),
               ),
               Expanded(
-                flex: 3,
-                child: Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Container(
-                      width: 100.0,
-                      height: 100.0,
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                        borderRadius: BorderRadius.circular(8.0),
-                        border: Border.all(
-                          color: FlutterFlowTheme.of(context).primary,
-                          width: 3.0,
-                        ),
-                      ),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            FlutterFlowCheckboxGroup(
-                              options: (getJsonField(
-                                FFAppState().currentpdf,
-                                r'''$.parts''',
-                                true,
-                              ) as List)
-                                  .map<String>((s) => s.toString())
-                                  .toList()
-                                  .toList(),
-                              onChanged: (val) => setState(
-                                  () => _model.checkboxGroupValues = val),
-                              controller:
-                                  _model.checkboxGroupValueController ??=
-                                      FormFieldController<List<String>>(
-                                [],
-                              ),
-                              activeColor: FlutterFlowTheme.of(context).primary,
-                              checkColor: FlutterFlowTheme.of(context).info,
-                              checkboxBorderColor:
-                                  FlutterFlowTheme.of(context).secondaryText,
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    fontFamily: 'Readex Pro',
-                                    letterSpacing: 0.0,
-                                  ),
-                              checkboxBorderRadius: BorderRadius.circular(4.0),
-                              initialized: _model.checkboxGroupValues != null,
-                            ),
-                          ],
-                        ),
-                      ).animateOnActionTrigger(
-                        animationsMap['columnOnActionTriggerAnimation']!,
-                      ),
-                    ),
-                  ),
-                ),
+                child: _buildInfoList(jsonField),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoList(List<dynamic> jsonList) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(6.0),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8.0),
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).secondaryBackground,
+              borderRadius: BorderRadius.circular(8.0),
+              border: Border.all(
+                color: FlutterFlowTheme.of(context).primary,
+                width: 3.0,
+              ),
+            ),
+            child: ListView.builder(
+              itemCount: jsonField.length,
+              itemBuilder: (context, index) {
+                final item = jsonField[index];
+                return ListTile(
+                  title: Text(
+                    "Code: ${item['code']!}",
+                    style: TextStyle(
+                      color: _selectedItems[index]
+                          ? Colors.green
+                          : Colors.black,
+                    ),
+                  ),
+                  subtitle: Text("Reference: ${item['ref']!}"),
+                  trailing: Checkbox(
+                    value: _selectedItems[index],
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _selectedItems[index] = value!;
+                        _saveSelectedItem(index, value); // Salva o estado atualizado
+                      });
+                    },
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),
