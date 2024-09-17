@@ -30,12 +30,12 @@ class _SaveScanButtonState extends State<SaveScanButton> {
         padding: const EdgeInsets.all(4.0),
         child: ElevatedButton.icon(
           onPressed: _fileName == null ? null : _pickPdf,
-          icon: FaIcon(
+          icon: const FaIcon(
             FontAwesomeIcons.upload,
             size: 15.0,
             color: Colors.white,
           ),
-          label: Text(
+          label: const Text(
             'Salvar',
             style: TextStyle(
               color: Colors.white,
@@ -52,7 +52,7 @@ class _SaveScanButtonState extends State<SaveScanButton> {
             padding:
                 const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
             elevation: 3.0,
-            side: BorderSide(
+            side: const BorderSide(
               color: Colors.white,
               width: 2.0,
             ),
