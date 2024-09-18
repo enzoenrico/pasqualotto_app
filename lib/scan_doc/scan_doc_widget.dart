@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import 'list_item.dart';
 import 'scan_doc_model.dart';
 
 export 'scan_doc_model.dart';
@@ -25,6 +26,14 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final animationsMap = <String, AnimationInfo>{};
+
+  List<Map<String, dynamic>> items = [
+    {'code': 'Item 1', 'ref': 'Reference 1'},
+    {'code': 'Item 2', 'ref': 'Reference 2'},
+    // Add more items as needed
+  ];
+
+  Map<String, bool> _checkedItems = {};
 
   @override
   void initState() {
@@ -60,12 +69,23 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
           !anim.applyInitialState),
       this,
     );
+
+    // Initialize the checked items map
+    for (var item in items) {
+      _checkedItems[item['code']] = false;
+    }
   }
 
   @override
   void dispose() {
     _model.dispose();
     super.dispose();
+  }
+
+  void _onCheckboxChanged(bool? value, String code) {
+    setState(() {
+      _checkedItems[code] = value ?? false;
+    });
   }
 
   @override
@@ -91,7 +111,7 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
                   color: FlutterFlowTheme.of(context).primaryBackground,
                 ),
                 child: Text(
-                  'Upload the pdf document',
+                  'Gerar lista de códigos',
                   textAlign: TextAlign.center,
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                         fontFamily: 'Readex Pro',
@@ -104,20 +124,19 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(6.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Container(
-                      width: 100.0,
-                      height: 100.0,
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                        borderRadius: BorderRadius.circular(8.0),
-                        border: Border.all(
-                          color: FlutterFlowTheme.of(context).primary,
-                          width: 3.0,
-                        ),
-                      ),
-                    ),
+                  child: ListView.builder(
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      final code = item['code'] as String;
+                      final ref = item['ref'] as String;
+                      return ListItem(
+                        code: code,
+                        ref: ref,
+                        isChecked: _checkedItems[code] ?? false,
+                        onChanged: (value) => _onCheckboxChanged(value, code),
+                      );
+                    },
                   ),
                 ),
               ),

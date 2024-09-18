@@ -13,23 +13,21 @@ class PdfSelectorButton extends StatefulWidget {
 
 class _PdfSelectorButtonState extends State<PdfSelectorButton> {
   String? _fileName;
-  final ScanDocModel _scanDocModel = ScanDocModel(); // Instantiate the model
+  final ScanDocModel _scanDocModel = ScanDocModel();
 
   Future<void> _pickPdf() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf'], // Only allow PDFs
+      allowedExtensions: ['pdf'],
     );
 
     if (result != null) {
-      // Get the picked file path
       File file = File(result.files.single.path!);
 
       setState(() {
         _fileName = result.files.first.name;
       });
 
-      // Send the file data to the model
       try {
         await _scanDocModel.sendPdfData(file);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -53,8 +51,8 @@ class _PdfSelectorButtonState extends State<PdfSelectorButton> {
           icon: const FaIcon(FontAwesomeIcons.upload),
           label: const Text('Enviar PDF'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green, // Button color
-            foregroundColor: Colors.white, // Text color
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
             padding:
                 const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
             elevation: 3.0,

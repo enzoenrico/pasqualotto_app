@@ -1,6 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // For the upload icon
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SaveScanButton extends StatefulWidget {
   @override
@@ -13,7 +13,7 @@ class _SaveScanButtonState extends State<SaveScanButton> {
   Future<void> _pickPdf() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf'], // Only allow PDFs
+      allowedExtensions: ['pdf'],
     );
 
     if (result != null) {
@@ -39,16 +39,15 @@ class _SaveScanButtonState extends State<SaveScanButton> {
             'Salvar',
             style: TextStyle(
               color: Colors.white,
-              fontFamily: 'Readex Pro', // Adjust the font if needed
+              fontFamily: 'Readex Pro',
               letterSpacing: 0.0,
             ),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green, // Button color
+            backgroundColor: Colors.green,
             foregroundColor: Colors.white,
             disabledForegroundColor: Colors.grey.withOpacity(0.38),
-            disabledBackgroundColor:
-                Colors.grey.withOpacity(0.12), // Text color
+            disabledBackgroundColor: Colors.grey.withOpacity(0.12),
             padding:
                 const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
             elevation: 3.0,
@@ -58,7 +57,7 @@ class _SaveScanButtonState extends State<SaveScanButton> {
             ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8.0),
-            ), // Disabled color
+            ),
           ),
         ),
       ),
