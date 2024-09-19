@@ -4,21 +4,22 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // For the upload icon
 
-import 'scan_doc_model.dart'; // Import the model
-
 class PdfSelectorButton extends StatefulWidget {
+  final Function(File) onPdfSelected; // Callback function
+
+  PdfSelectorButton({required this.onPdfSelected});
+
   @override
   _PdfSelectorButtonState createState() => _PdfSelectorButtonState();
 }
 
 class _PdfSelectorButtonState extends State<PdfSelectorButton> {
   String? _fileName;
-  final ScanDocModel _scanDocModel = ScanDocModel();
 
   Future<void> _pickPdf() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf'],
+      allowedExtensions: ['pdf'], // Only allow PDFs
     );
 
     if (result != null) {
@@ -28,16 +29,7 @@ class _PdfSelectorButtonState extends State<PdfSelectorButton> {
         _fileName = result.files.first.name;
       });
 
-      try {
-        await _scanDocModel.sendPdfData(file);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('PDF uploaded successfully')),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to upload PDF')),
-        );
-      }
+      widget.onPdfSelected(file); // Call the callback with the selected file
     }
   }
 
@@ -51,15 +43,10 @@ class _PdfSelectorButtonState extends State<PdfSelectorButton> {
           icon: const FaIcon(FontAwesomeIcons.upload),
           label: const Text('Enviar PDF'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
-            foregroundColor: Colors.white,
+            backgroundColor: Colors.green, // Button color
+            foregroundColor: Colors.white, // Text color
             padding:
                 const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-            elevation: 3.0,
-            side: const BorderSide(
-              color: Colors.white,
-              width: 2.0,
-            ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8.0),
             ),

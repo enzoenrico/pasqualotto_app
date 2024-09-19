@@ -38,6 +38,14 @@ class ScanDocModel extends FlutterFlowModel<ScanDocWidget> {
     }
   }
 
+  Future<List<Map<String, dynamic>>> fetchItems(File pdfFile) async {
+    List<dynamic> response = await sendPdfData(pdfFile);
+    return List<Map<String, dynamic>>.from(response.map((item) => {
+          'code': item['code'],
+          'ref': item['ref'],
+        }));
+  }
+
   @override
   void initState(BuildContext context) {}
 

@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SaveScanButton extends StatefulWidget {
+  final VoidCallback onSave;
+
+  const SaveScanButton({required this.onSave, Key? key}) : super(key: key);
+
   @override
   _SaveScanButtonState createState() => _SaveScanButtonState();
 }
@@ -29,7 +33,7 @@ class _SaveScanButtonState extends State<SaveScanButton> {
       child: Padding(
         padding: const EdgeInsets.all(4.0),
         child: ElevatedButton.icon(
-          onPressed: _fileName == null ? null : _pickPdf,
+          onPressed: _fileName == null ? widget.onSave : _pickPdf,
           icon: const FaIcon(
             FontAwesomeIcons.upload,
             size: 15.0,
