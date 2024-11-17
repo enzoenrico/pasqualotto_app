@@ -75,14 +75,33 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
     super.dispose();
   }
 
+  Future<void> _resetState() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Limpa o SharedPreferences
+    await prefs.remove('savedItems');
+    for (String key
+        in prefs.getKeys().where((key) => key.startsWith('checked_'))) {
+      await prefs.remove(key);
+    }
+
+    // Reseta os dados locais
+    setState(() {
+      _items = [];
+      _checkedItems = {};
+    });
+  }
+
   Future<void> _onPdfUploaded(File file) async {
     setState(() {
       _isLoading = true;
     });
 
     try {
+      // Chama a API para obter os itens
       List<Map<String, dynamic>> items = await _model.fetchItems(file);
 
+      // Atualiza os itens e os estados dos checkboxes
       setState(() {
         _items = items;
         _checkedItems = {for (var item in items) item['code']: false};
@@ -104,41 +123,53 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
     });
   }
 
-  Future<void> _saveList() async {
-    final prefs = await SharedPreferences.getInstance();
+Future<void> _saveList() async {
+  final prefs = await SharedPreferences.getInstance();
 
-    // Save item codes
-    List<String> itemCodes =
-        _items.map((item) => item['code'] as String).toList();
-    await prefs.setStringList('savedItemCodes', itemCodes);
+  // Serialize the entire list of items
+  String serializedList = jsonEncode(_items); // Encode _items as JSON
 
-    // Save checked states
-    for (var entry in _checkedItems.entries) {
-      await prefs.setBool('checked_${entry.key}', entry.value);
-    }
+  // Fetch or initialize saved lists
+  List<String> savedLists = prefs.getStringList('savedLists') ?? [];
+  savedLists.add(serializedList); // Append serialized list
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Lista salva com sucesso!')),
-    );
-  }
+  // Save back to SharedPreferences
+  await prefs.setStringList('savedLists', savedLists);
+
+  // Log for debugging
+  print('Saved Lists: $savedLists');
+
+  // Reset local state
+  setState(() {
+    _items = [];
+    _checkedItems = {};
+  });
+
+  // Navigate to AllItemsWidget
+  context.go('/all_items');
+}
+
 
   Future<void> _loadSavedData() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Load saved item codes
-    List<String>? savedItemCodes = prefs.getStringList('savedItemCodes');
-    if (savedItemCodes != null) {
-      // Load checked states
-      Map<String, bool> savedCheckedItems = {};
-      for (String code in savedItemCodes) {
-        savedCheckedItems[code] = prefs.getBool('checked_$code') ?? false;
+    // Carrega os itens salvos
+    List<String>? serializedItems = prefs.getStringList('savedItems');
+    if (serializedItems != null) {
+      List<Map<String, dynamic>> loadedItems = serializedItems
+          .map((item) => jsonDecode(item) as Map<String, dynamic>)
+          .toList();
+
+      // Carrega os estados dos checkboxes
+      Map<String, bool> loadedCheckedItems = {};
+      for (var item in loadedItems) {
+        String code = item['code'];
+        loadedCheckedItems[code] = prefs.getBool('checked_$code') ?? false;
       }
 
       setState(() {
-        _items = savedItemCodes
-            .map((code) => {'code': code, 'ref': 'Ref: $code'})
-            .toList();
-        _checkedItems = savedCheckedItems;
+        _items = loadedItems;
+        _checkedItems = loadedCheckedItems;
       });
     }
   }

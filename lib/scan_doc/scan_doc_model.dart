@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
@@ -44,6 +45,25 @@ class ScanDocModel extends FlutterFlowModel<ScanDocWidget> {
           'code': item['code'],
           'ref': item['ref'],
         }));
+  }
+
+  // Método para salvar checkboxes no SharedPreferences
+  Future<void> saveToShared(
+      List<Map<String, dynamic>> items) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> encodedItems =
+        items.map((item) => jsonEncode(item)).toList();
+    await prefs.setStringList('savedCheckboxes', encodedItems);
+  }
+
+  // Método para carregar checkboxes do SharedPreferences
+  Future<List<Map<String, dynamic>>> loadFromShared() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? encodedItems = prefs.getStringList('savedCheckboxes');
+    if (encodedItems == null) return [];
+    return encodedItems
+        .map((item) => Map<String, dynamic>.from(jsonDecode(item)))
+        .toList();
   }
 
   @override

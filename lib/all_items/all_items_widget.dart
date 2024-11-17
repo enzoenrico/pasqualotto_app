@@ -1,3 +1,5 @@
+import 'package:pasqualotto/scan_codes/scan_codes_widget.dart';
+
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
@@ -13,20 +15,32 @@ class AllItemsWidget extends StatefulWidget {
 }
 
 class _AllItemsWidgetState extends State<AllItemsWidget> {
-  late AllItemsModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  final AllItemsModel _model = AllItemsModel();
+  List<List<Map<String, dynamic>>> savedLists = [];
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => AllItemsModel());
+    _loadSavedLists();
+  }
+
+  Future<void> _loadSavedLists() async {
+    List<List<Map<String, dynamic>>> lists = await _model.loadSavedLists();
+    setState(() {
+      savedLists = lists;
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadSavedLists();
   }
 
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
@@ -77,115 +91,72 @@ class _AllItemsWidgetState extends State<AllItemsWidget> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(6.0),
-                  child: Builder(
-                    builder: (context) {
-                      final allItemsHome = FFAppState().allpdfs.toList();
-
-                      return SingleChildScrollView(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: List.generate(allItemsHome.length,
-                              (allItemsHomeIndex) {
-                            final allItemsHomeItem =
-                                allItemsHome[allItemsHomeIndex];
-                            return InkWell(
-                              splashColor: Colors.transparent,
-                              focusColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              onTap: () async {
-                                context.pushNamed(
-                                  'scan_codes',
-                                  queryParameters: {
-                                    'checkThose': serializeParam(
-                                      allItemsHomeItem,
-                                      ParamType.JSON,
-                                    ),
-                                  }.withoutNulls,
-                                  extra: <String, dynamic>{
-                                    kTransitionInfoKey: const TransitionInfo(
-                                      hasTransition: true,
-                                      transitionType:
-                                          PageTransitionType.bottomToTop,
-                                      duration: Duration(milliseconds: 150),
-                                    ),
-                                  },
-                                );
-                              },
-                              child: Container(
-                                width: 100.0,
-                                height: 161.0,
-                                decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  border: Border.all(
-                                    color: FlutterFlowTheme.of(context).primary,
-                                    width: 3.0,
-                                  ),
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(16.0),
-                                      child: Image.network(
-                                        'https://picsum.photos/seed/407/600',
-                                        width: 368.0,
-                                        height: 117.0,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          getJsonField(
-                                            allItemsHomeItem,
-                                            r'''$["name"]''',
-                                          ).toString(),
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily: 'Readex Pro',
-                                                letterSpacing: 0.0,
-                                              ),
-                                        ),
-                                        Text(
-                                          FFAppState()
-                                              .allpdfs
-                                              .length
-                                              .toString(),
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily: 'Readex Pro',
-                                                letterSpacing: 0.0,
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                  child: savedLists.isEmpty
+                      ? Center(
+                          child: Text(
+                            "No saved lists available",
+                            style: FlutterFlowTheme.of(context).bodyMedium,
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: savedLists.length,
+                          itemBuilder: (context, index) {
+                            final list = savedLists[index];
+                            return Container(
+                              width: 100.0,
+                              height: 100.0,
+                              margin: const EdgeInsets.symmetric(vertical: 5.0),
+                              decoration: BoxDecoration(
+                                color: FlutterFlowTheme.of(context)
+                                    .secondaryBackground,
+                                borderRadius: BorderRadius.circular(8.0),
+                                border: Border.all(
+                                  color: FlutterFlowTheme.of(context).primary,
+                                  width: 2.0,
                                 ),
                               ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0),
+                                    child: Text(
+                                      'List ${index + 1}',
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
+                                            fontFamily: 'Readex Pro',
+                                            fontSize: 18.0,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      // Pass the selected list to ScanCodesWidget
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ScanCodesWidget(
+                                            checkThose:
+                                                list, // Pass the list dynamically
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: const Text('View'),
+                                  ),
+                                ],
+                              ),
                             );
-                          }).divide(const SizedBox(height: 10.0)),
+                          },
                         ),
-                      );
-                    },
-                  ),
                 ),
               ),
             ),
-          ].divide(const SizedBox(height: 10.0)).addToStart(const SizedBox(height: 50.0)),
+          ].divide(const SizedBox(height: 10.0)),
         ),
       ),
     );
