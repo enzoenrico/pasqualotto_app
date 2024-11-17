@@ -1,1 +1,5 @@
 build/
+.flutter-plugins*
+.dart_tool/
+.idea/
+.vscode/
