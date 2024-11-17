@@ -1,11 +1,9 @@
-import 'package:pasqualotto/scan_codes/scan_codes_widget.dart';
-
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'all_items_model.dart';
-export 'all_items_model.dart';
+import 'package:pasqualotto/scan_codes/scan_codes_widget.dart';
 
 class AllItemsWidget extends StatefulWidget {
   const AllItemsWidget({super.key});
@@ -33,21 +31,7 @@ class _AllItemsWidgetState extends State<AllItemsWidget> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _loadSavedLists();
-  }
-
-  @override
-  void dispose() {
-    _model.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    context.watch<FFAppState>();
-
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -83,91 +67,47 @@ class _AllItemsWidgetState extends State<AllItemsWidget> {
               ),
             ),
             Expanded(
-              child: SingleChildScrollView(
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).secondaryBackground,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(6.0),
-                    child: savedLists.isEmpty
-                        ? Center(
-                            child: Text(
-                              "No saved lists available",
-                              style: FlutterFlowTheme.of(context).bodyMedium,
-                            ),
-                          )
-                        : Column(
-                            children: savedLists.map((list) {
-                              final parent = list['items'][0]['parent'];
-                              final date = DateTime.parse(list['date']);
-                              return Container(
-                                width: double.infinity,
-                                margin:
-                                    const EdgeInsets.symmetric(vertical: 5.0),
-                                decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  border: Border.all(
-                                    color: FlutterFlowTheme.of(context).primary,
-                                    width: 2.0,
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8.0, vertical: 4.0),
-                                      child: Text(
-                                        parent,
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily: 'Readex Pro',
-                                              fontSize: 18.0,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8.0),
-                                      child: Text(
-                                        'Saved on: ${date.day}/${date.month}/${date.year}',
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodySmall,
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  ScanCodesWidget(
-                                                checkThose: list['items'],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        child: const Text('View'),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                  ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).secondaryBackground,
                 ),
+                child: savedLists.isEmpty
+                    ? Center(
+                        child: Text(
+                          "No saved lists available",
+                          style: FlutterFlowTheme.of(context).bodyMedium,
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: savedLists.length,
+                        itemBuilder: (context, index) {
+                          final list = savedLists[index];
+                          final parent = list['items'][0]['parent'];
+                          final date = DateTime.parse(list['date']);
+                          return ListTile(
+                            title: Text(parent),
+                            subtitle: Text(
+                                'Saved on: ${date.day}/${date.month}/${date.year}'),
+                            trailing: ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ScanCodesWidget(
+                                      checkThose: list['items'],
+                                      listId: index.toString(),
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Text('View'),
+                            ),
+                          );
+                        },
+                      ),
               ),
             ),
-          ].divide(const SizedBox(height: 10.0)),
+          ],
         ),
       ),
     );

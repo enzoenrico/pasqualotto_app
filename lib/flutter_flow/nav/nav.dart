@@ -80,7 +80,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             checkThose: params.getParam(
               'checkThose',
               ParamType.JSON,
-            ),
+            ), listId: params.getParam("listId", ParamType.String),
           ),
         )
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
