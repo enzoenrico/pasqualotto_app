@@ -123,32 +123,47 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
     });
   }
 
-Future<void> _saveList() async {
-  final prefs = await SharedPreferences.getInstance();
+  Future<void> _saveList() async {
+    final prefs = await SharedPreferences.getInstance();
 
-  // Serialize the entire list of items
-  String serializedList = jsonEncode(_items); // Encode _items as JSON
+    // Prepare the list with all fields including parent, size, and quantity
+    List<Map<String, dynamic>> fullItems = _items.map((item) {
+      return {
+        'parent': item['parent'], // Include parent
+        'code': item['code'], // Include code
+        'ref': item['ref'], // Include reference
+        'size': item['size'], // Include size
+        'quantity': item['quantity'], // Include quantity
+      };
+    }).toList();
 
-  // Fetch or initialize saved lists
-  List<String> savedLists = prefs.getStringList('savedLists') ?? [];
-  savedLists.add(serializedList); // Append serialized list
+    // Retrieve the existing lists from SharedPreferences
+    List<String> savedLists = prefs.getStringList('savedLists') ?? [];
 
-  // Save back to SharedPreferences
-  await prefs.setStringList('savedLists', savedLists);
+    // Add the new list with the current date
+    Map<String, dynamic> listWithDate = {
+      'date': DateTime.now().toIso8601String(), // Add the current date
+      'items': fullItems, // Add the items
+    };
+    savedLists.add(jsonEncode(listWithDate));
 
-  // Log for debugging
-  print('Saved Lists: $savedLists');
+    // Save the updated list back to SharedPreferences
+    await prefs.setStringList('savedLists', savedLists);
 
-  // Reset local state
-  setState(() {
-    _items = [];
-    _checkedItems = {};
-  });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Lista salva com sucesso!')),
+    );
 
-  // Navigate to AllItemsWidget
-  context.go('/all_items');
-}
+    print('$listWithDate');
 
+    // Reset local state
+    setState(() {
+      _items = [];
+      _checkedItems = {};
+    });
+
+    context.go('/all_items');
+  }
 
   Future<void> _loadSavedData() async {
     final prefs = await SharedPreferences.getInstance();

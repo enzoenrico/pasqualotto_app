@@ -41,18 +41,23 @@ class ScanDocModel extends FlutterFlowModel<ScanDocWidget> {
 
   Future<List<Map<String, dynamic>>> fetchItems(File pdfFile) async {
     List<dynamic> response = await sendPdfData(pdfFile);
-    return List<Map<String, dynamic>>.from(response.map((item) => {
-          'code': item['code'],
-          'ref': item['ref'],
-        }));
+
+    // Ensure all required fields are included
+    return response.map((item) {
+      return {
+        'parent': item['parent'] ?? 'Sem identificação', // Default to prevent null
+        'code': item['code'] ?? 'Sem identificação',
+        'ref': item['ref'] ?? 'Sem identificação',
+        'size': item['size'] ?? 'Sem identificação',
+        'quantity': item['quantity'] ?? 'Sem identificação',
+      };
+    }).toList();
   }
 
   // Método para salvar checkboxes no SharedPreferences
-  Future<void> saveToShared(
-      List<Map<String, dynamic>> items) async {
+  Future<void> saveToShared(List<Map<String, dynamic>> items) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> encodedItems =
-        items.map((item) => jsonEncode(item)).toList();
+    List<String> encodedItems = items.map((item) => jsonEncode(item)).toList();
     await prefs.setStringList('savedCheckboxes', encodedItems);
   }
 

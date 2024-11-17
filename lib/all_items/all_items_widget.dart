@@ -17,7 +17,7 @@ class AllItemsWidget extends StatefulWidget {
 class _AllItemsWidgetState extends State<AllItemsWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final AllItemsModel _model = AllItemsModel();
-  List<List<Map<String, dynamic>>> savedLists = [];
+  List<Map<String, dynamic>> savedLists = [];
 
   @override
   void initState() {
@@ -26,7 +26,7 @@ class _AllItemsWidgetState extends State<AllItemsWidget> {
   }
 
   Future<void> _loadSavedLists() async {
-    List<List<Map<String, dynamic>>> lists = await _model.loadSavedLists();
+    List<Map<String, dynamic>> lists = await _model.loadSavedLists();
     setState(() {
       savedLists = lists;
     });
@@ -102,9 +102,13 @@ class _AllItemsWidgetState extends State<AllItemsWidget> {
                           itemCount: savedLists.length,
                           itemBuilder: (context, index) {
                             final list = savedLists[index];
+                            final parent = list['items'][0]
+                                ['parent']; // Get parent from first item
+                            final date = DateTime.parse(
+                                list['date']); // Parse saved date
                             return Container(
                               width: 100.0,
-                              height: 100.0,
+                              height: 120.0,
                               margin: const EdgeInsets.symmetric(vertical: 5.0),
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context)
@@ -115,15 +119,14 @@ class _AllItemsWidgetState extends State<AllItemsWidget> {
                                   width: 2.0,
                                 ),
                               ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
+                                        horizontal: 8.0, vertical: 4.0),
                                     child: Text(
-                                      'List ${index + 1}',
+                                      parent,
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .override(
@@ -133,20 +136,31 @@ class _AllItemsWidgetState extends State<AllItemsWidget> {
                                           ),
                                     ),
                                   ),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      // Pass the selected list to ScanCodesWidget
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => ScanCodesWidget(
-                                            checkThose:
-                                                list, // Pass the list dynamically
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0),
+                                    child: Text(
+                                      'Saved on: ${date.day}/${date.month}/${date.year}',
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodySmall,
+                                    ),
+                                  ),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                ScanCodesWidget(
+                                              checkThose: list['items'],
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    },
-                                    child: const Text('View'),
+                                        );
+                                      },
+                                      child: const Text('View'),
+                                    ),
                                   ),
                                 ],
                               ),

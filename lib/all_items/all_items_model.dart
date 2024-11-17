@@ -8,22 +8,24 @@ import 'package:flutter/material.dart';
 class AllItemsModel extends FlutterFlowModel<AllItemsWidget> {
   final unfocusNode = FocusNode();
 
-  Future<List<List<Map<String, dynamic>>>> loadSavedLists() async {
+  Future<List<Map<String, dynamic>>> loadSavedLists() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Fetch saved lists
+    // Retrieve saved lists
     List<String>? serializedLists = prefs.getStringList('savedLists');
     if (serializedLists == null) return [];
 
     try {
-      // Decode each JSON string into a list of maps
+      // Parse each list into a Map with items and date
       return serializedLists.map((listString) {
-        final decodedList = jsonDecode(listString); // Decode JSON
-        return List<Map<String, dynamic>>.from(
-            decodedList as List<dynamic>); // Ensure correct type
+        final decodedList = jsonDecode(listString);
+        return {
+          'date': decodedList['date'], // Extract the date
+          'items': List<Map<String, dynamic>>.from(decodedList['items']),
+        };
       }).toList();
     } catch (e) {
-      debugPrint('Error loading saved lists: $e');
+      debugPrint('Erro ao carregar listas salvas: $e');
       return [];
     }
   }
