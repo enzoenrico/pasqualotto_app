@@ -1,17 +1,18 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart'; // Para o scanner de código de barras
+import '../flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 
 class ScanCodesWidget extends StatefulWidget {
-  final List<dynamic> checkThose;
-  final String listId; // Usado para identificar a lista
-
   const ScanCodesWidget({
     super.key,
     required this.checkThose,
-    required this.listId, // Identificador único para cada lista
+    required this.listId, // Adicionado para identificar a lista única
   });
 
+  final List<dynamic> checkThose; // A lista de itens
+  final String listId; // Um identificador único para esta lista
 
   @override
   State<ScanCodesWidget> createState() => _ScanCodesWidgetState();
@@ -21,6 +22,7 @@ class _ScanCodesWidgetState extends State<ScanCodesWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   late List<dynamic> jsonField;
   List<bool> _selectedItems = [];
+  bool _isScanning = false; // Para indicar se o scanner está ativo
 
   @override
   void initState() {
@@ -34,15 +36,33 @@ class _ScanCodesWidgetState extends State<ScanCodesWidget> {
     setState(() {
       _selectedItems = List<bool>.filled(jsonField.length, false);
       for (int i = 0; i < jsonField.length; i++) {
-        _selectedItems[i] =
-            prefs.getBool('${widget.listId}_selected_$i') ?? false;
+        final key = '${widget.listId}_selected_$i';
+        _selectedItems[i] = prefs.getBool(key) ?? false;
       }
     });
   }
 
   Future<void> _saveSelectedItem(int index, bool value) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('${widget.listId}_selected_$index', value);
+    final key = '${widget.listId}_selected_$index';
+    await prefs.setBool(key, value);
+  }
+
+  void _onBarcodeDetected(String barcode) {
+    final index = jsonField.indexWhere((item) => item['code'] == barcode);
+    if (index != -1) {
+      setState(() {
+        _selectedItems[index] = true;
+        _saveSelectedItem(index, true);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Código $barcode marcado com sucesso!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Código $barcode não encontrado na lista.')),
+      );
+    }
   }
 
   @override
@@ -56,7 +76,34 @@ class _ScanCodesWidgetState extends State<ScanCodesWidget> {
           child: Column(
             children: [
               Expanded(
+                flex: 4,
                 child: _buildInfoList(jsonField),
+              ),
+              Expanded(
+                flex: 2,
+                child: _isScanning
+                    ? MobileScanner(
+                        onDetect: (capture) {
+                          final barcodes = capture.barcodes;
+                          for (var barcode in barcodes) {
+                            if (barcode.rawValue != null) {
+                              _onBarcodeDetected(barcode.rawValue!);
+                              break;
+                            }
+                          }
+                        },
+                      )
+                    : Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _isScanning = !_isScanning;
+                            });
+                          },
+                          child:
+                              const Text('Iniciar Scanner de Código de Barras'),
+                        ),
+                      ),
               ),
             ],
           ),
@@ -89,9 +136,7 @@ class _ScanCodesWidgetState extends State<ScanCodesWidget> {
                 title: Text(
                   "Code: ${item['code']!}",
                   style: TextStyle(
-                    color: _selectedItems[index]
-                        ? Colors.green
-                        : Colors.black,
+                    color: _selectedItems[index] ? Colors.green : Colors.black,
                   ),
                 ),
                 subtitle: Text("Reference: ${item['ref']!}"),
