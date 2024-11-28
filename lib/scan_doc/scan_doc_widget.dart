@@ -108,7 +108,7 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Falha ao carregar os dados')),
+        const SnackBar(content: Text('Falha ao carregar os dados')),
       );
     } finally {
       setState(() {
@@ -151,7 +151,7 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
     await prefs.setStringList('savedLists', savedLists);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Lista salva com sucesso!')),
+      const SnackBar(content: Text('Lista salva com sucesso!')),
     );
 
     print('$listWithDate');
@@ -226,7 +226,7 @@ class _ScanDocWidgetState extends State<ScanDocWidget>
                 child: Padding(
                   padding: const EdgeInsets.all(6.0),
                   child: _isLoading
-                      ? Center(child: CircularProgressIndicator())
+                      ? const Center(child: CircularProgressIndicator())
                       : ListView.builder(
                           itemCount: _items.length,
                           itemBuilder: (context, index) {

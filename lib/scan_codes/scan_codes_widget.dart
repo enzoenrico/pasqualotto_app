@@ -1,7 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart'; // Para o scanner de código de barras
-import '../flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 
 class ScanCodesWidget extends StatefulWidget {
@@ -27,25 +26,41 @@ class _ScanCodesWidgetState extends State<ScanCodesWidget> {
   @override
   void initState() {
     super.initState();
-    jsonField = widget.checkThose;
+    jsonField = widget.checkThose; // Direct assignment since it's required
     _loadSelectedItems();
   }
 
+  @override
+  void dispose() {
+    // Cleanup if needed
+    super.dispose();
+  }
+
   Future<void> _loadSelectedItems() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _selectedItems = List<bool>.filled(jsonField.length, false);
-      for (int i = 0; i < jsonField.length; i++) {
-        final key = '${widget.listId}_selected_$i';
-        _selectedItems[i] = prefs.getBool(key) ?? false;
-      }
-    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        _selectedItems = List<bool>.filled(jsonField.length, false);
+        for (int i = 0; i < jsonField.length; i++) {
+          final key = '${widget.listId}_selected_$i';
+          _selectedItems[i] = prefs.getBool(key) ?? false;
+        }
+      });
+    } catch (e) {
+      debugPrint('Error loading items: $e');
+      // Handle error appropriately
+    }
   }
 
   Future<void> _saveSelectedItem(int index, bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = '${widget.listId}_selected_$index';
-    await prefs.setBool(key, value);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = '${widget.listId}_selected_$index';
+      await prefs.setBool(key, value);
+    } catch (e) {
+      debugPrint('Error saving item: $e');
+      // Handle error appropriately
+    }
   }
 
   void _onBarcodeDetected(String barcode) {

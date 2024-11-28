@@ -7,12 +7,12 @@ class ListItem extends StatelessWidget {
   final ValueChanged<bool?> onChanged;
 
   const ListItem({
-    Key? key,
+    super.key,
     required this.code,
     required this.ref,
     required this.isChecked,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

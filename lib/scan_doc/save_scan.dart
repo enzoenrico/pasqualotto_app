@@ -5,7 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class SaveScanButton extends StatefulWidget {
   final VoidCallback onSave;
 
-  const SaveScanButton({required this.onSave, Key? key}) : super(key: key);
+  const SaveScanButton({required this.onSave, super.key});
 
   @override
   _SaveScanButtonState createState() => _SaveScanButtonState();

@@ -100,7 +100,7 @@ class _AllItemsWidgetState extends State<AllItemsWidget> {
                                   ),
                                 );
                               },
-                              child: Text('View'),
+                              child: const Text('View'),
                             ),
                           );
                         },

@@ -7,7 +7,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // For the uplo
 class PdfSelectorButton extends StatefulWidget {
   final Function(File) onPdfSelected; // Callback function
 
-  PdfSelectorButton({required this.onPdfSelected});
+  const PdfSelectorButton({super.key, required this.onPdfSelected});
 
   @override
   _PdfSelectorButtonState createState() => _PdfSelectorButtonState();
